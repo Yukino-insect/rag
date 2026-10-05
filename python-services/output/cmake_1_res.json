@@ -1,0 +1,538 @@
+{
+    "input_path": "mineru_like_service\\test\\input\\cmake.pdf",
+    "page_index": 1,
+    "page_count": 2,
+    "width": 1190,
+    "height": 1684,
+    "model_settings": {
+        "use_doc_preprocessor": false,
+        "use_layout_detection": true,
+        "use_chart_recognition": false,
+        "use_seal_recognition": false,
+        "use_ocr_for_image_block": false,
+        "format_block_content": false,
+        "merge_layout_blocks": true,
+        "markdown_ignore_labels": [
+            "number",
+            "footnote",
+            "header",
+            "header_image",
+            "footer",
+            "footer_image",
+            "aside_text"
+        ],
+        "return_layout_polygon_points": true
+    },
+    "parsing_res_list": [
+        {
+            "block_label": "text",
+            "block_content": "3. CMAKE_CURRENT_SOURCE_DIR：表示当前处理的 CMakeLists.txt 文件所在的源目录的路径。",
+            "block_bbox": [
+                169,
+                63,
+                981,
+                87
+            ],
+            "block_id": 0,
+            "block_order": 1,
+            "group_id": 0,
+            "global_block_id": 6,
+            "global_group_id": 6,
+            "block_polygon_points": [
+                [
+                    169.0,
+                    63.0
+                ],
+                [
+                    981.0,
+                    63.0
+                ],
+                [
+                    981.0,
+                    87.0
+                ],
+                [
+                    169.0,
+                    87.0
+                ]
+            ]
+        },
+        {
+            "block_label": "text",
+            "block_content": "4. CMAKE_CURRENT_BINARY_DIR：表示当前处理的 CMakeLists.txt 文件的输出目录的路径。",
+            "block_bbox": [
+                169,
+                97,
+                964,
+                119
+            ],
+            "block_id": 1,
+            "block_order": 2,
+            "group_id": 1,
+            "global_block_id": 7,
+            "global_group_id": 7,
+            "block_polygon_points": [
+                [
+                    169.0,
+                    97.0
+                ],
+                [
+                    964.0,
+                    97.0
+                ],
+                [
+                    964.0,
+                    119.0
+                ],
+                [
+                    169.0,
+                    119.0
+                ]
+            ]
+        },
+        {
+            "block_label": "text",
+            "block_content": "5. CMAKE_INSTALL_PREFIX：表示安装目录的路径，即 make install 命令安装文件的目标路径。",
+            "block_bbox": [
+                169,
+                127,
+                1021,
+                151
+            ],
+            "block_id": 2,
+            "block_order": 3,
+            "group_id": 2,
+            "global_block_id": 8,
+            "global_group_id": 8,
+            "block_polygon_points": [
+                [
+                    169.0,
+                    127.0
+                ],
+                [
+                    1021.0,
+                    127.0
+                ],
+                [
+                    1021.0,
+                    151.0
+                ],
+                [
+                    169.0,
+                    151.0
+                ]
+            ]
+        },
+        {
+            "block_label": "text",
+            "block_content": "6. PROJECT_NAME：表示当前项目的名称。",
+            "block_bbox": [
+                171,
+                160,
+                538,
+                184
+            ],
+            "block_id": 3,
+            "block_order": 4,
+            "group_id": 3,
+            "global_block_id": 9,
+            "global_group_id": 9,
+            "block_polygon_points": [
+                [
+                    171.0,
+                    160.0
+                ],
+                [
+                    538.0,
+                    160.0
+                ],
+                [
+                    538.0,
+                    184.0
+                ],
+                [
+                    171.0,
+                    184.0
+                ]
+            ]
+        },
+        {
+            "block_label": "text",
+            "block_content": "7. PROJECT_SOURCE_DIR：表示顶层项目目录的路径。",
+            "block_bbox": [
+                171,
+                193,
+                641,
+                216
+            ],
+            "block_id": 4,
+            "block_order": 5,
+            "group_id": 4,
+            "global_block_id": 10,
+            "global_group_id": 10,
+            "block_polygon_points": [
+                [
+                    171.0,
+                    193.0
+                ],
+                [
+                    641.0,
+                    193.0
+                ],
+                [
+                    641.0,
+                    216.0
+                ],
+                [
+                    171.0,
+                    216.0
+                ]
+            ]
+        },
+        {
+            "block_label": "text",
+            "block_content": "8. CMAKE_C_总有C编译器的路径。",
+            "block_bbox": [
+                171,
+                225,
+                586,
+                249
+            ],
+            "block_id": 5,
+            "block_order": 6,
+            "group_id": 5,
+            "global_block_id": 11,
+            "global_group_id": 11,
+            "block_polygon_points": [
+                [
+                    171.0,
+                    225.0
+                ],
+                [
+                    586.0,
+                    225.0
+                ],
+                [
+                    586.0,
+                    249.0
+                ],
+                [
+                    171.0,
+                    249.0
+                ]
+            ]
+        },
+        {
+            "block_label": "text",
+            "block_content": "9. CMAKE_CXX_Compiler：表示 C++ 编译器的路径。",
+            "block_bbox": [
+                170,
+                258,
+                627,
+                281
+            ],
+            "block_id": 6,
+            "block_order": 7,
+            "group_id": 6,
+            "global_block_id": 12,
+            "global_group_id": 12,
+            "block_polygon_points": [
+                [
+                    170.0,
+                    258.0
+                ],
+                [
+                    627.0,
+                    258.0
+                ],
+                [
+                    627.0,
+                    281.0
+                ],
+                [
+                    170.0,
+                    281.0
+                ]
+            ]
+        },
+        {
+            "block_label": "text",
+            "block_content": "10. CMAKE_SYSTEM_NAME：表示当前操作系统的名称（例如，Linux、Windows）。",
+            "block_bbox": [
+                161,
+                291,
+                880,
+                316
+            ],
+            "block_id": 7,
+            "block_order": 8,
+            "group_id": 7,
+            "global_block_id": 13,
+            "global_group_id": 13,
+            "block_polygon_points": [
+                [
+                    161.0,
+                    291.0
+                ],
+                [
+                    880.0,
+                    291.0
+                ],
+                [
+                    880.0,
+                    316.0
+                ],
+                [
+                    161.0,
+                    316.0
+                ]
+            ]
+        }
+    ],
+    "layout_det_res": {
+        "input_path": null,
+        "page_index": null,
+        "boxes": [
+            {
+                "cls_id": 22,
+                "label": "text",
+                "score": 0.7768511176109314,
+                "coordinate": [
+                    169,
+                    63,
+                    981,
+                    87
+                ],
+                "order": 1,
+                "polygon_points": [
+                    [
+                        169.0,
+                        63.0
+                    ],
+                    [
+                        981.0,
+                        63.0
+                    ],
+                    [
+                        981.0,
+                        87.0
+                    ],
+                    [
+                        169.0,
+                        87.0
+                    ]
+                ]
+            },
+            {
+                "cls_id": 22,
+                "label": "text",
+                "score": 0.7859464287757874,
+                "coordinate": [
+                    169,
+                    97,
+                    964,
+                    119
+                ],
+                "order": 2,
+                "polygon_points": [
+                    [
+                        169.0,
+                        97.0
+                    ],
+                    [
+                        964.0,
+                        97.0
+                    ],
+                    [
+                        964.0,
+                        119.0
+                    ],
+                    [
+                        169.0,
+                        119.0
+                    ]
+                ]
+            },
+            {
+                "cls_id": 22,
+                "label": "text",
+                "score": 0.7989466190338135,
+                "coordinate": [
+                    169,
+                    127,
+                    1021,
+                    151
+                ],
+                "order": 3,
+                "polygon_points": [
+                    [
+                        169.0,
+                        127.0
+                    ],
+                    [
+                        1021.0,
+                        127.0
+                    ],
+                    [
+                        1021.0,
+                        151.0
+                    ],
+                    [
+                        169.0,
+                        151.0
+                    ]
+                ]
+            },
+            {
+                "cls_id": 22,
+                "label": "text",
+                "score": 0.7966649532318115,
+                "coordinate": [
+                    171,
+                    160,
+                    538,
+                    184
+                ],
+                "order": 4,
+                "polygon_points": [
+                    [
+                        171.0,
+                        160.0
+                    ],
+                    [
+                        538.0,
+                        160.0
+                    ],
+                    [
+                        538.0,
+                        184.0
+                    ],
+                    [
+                        171.0,
+                        184.0
+                    ]
+                ]
+            },
+            {
+                "cls_id": 22,
+                "label": "text",
+                "score": 0.7982674837112427,
+                "coordinate": [
+                    171,
+                    193,
+                    641,
+                    216
+                ],
+                "order": 5,
+                "polygon_points": [
+                    [
+                        171.0,
+                        193.0
+                    ],
+                    [
+                        641.0,
+                        193.0
+                    ],
+                    [
+                        641.0,
+                        216.0
+                    ],
+                    [
+                        171.0,
+                        216.0
+                    ]
+                ]
+            },
+            {
+                "cls_id": 22,
+                "label": "text",
+                "score": 0.7968883514404297,
+                "coordinate": [
+                    171,
+                    225,
+                    586,
+                    249
+                ],
+                "order": 6,
+                "polygon_points": [
+                    [
+                        171.0,
+                        225.0
+                    ],
+                    [
+                        586.0,
+                        225.0
+                    ],
+                    [
+                        586.0,
+                        249.0
+                    ],
+                    [
+                        171.0,
+                        249.0
+                    ]
+                ]
+            },
+            {
+                "cls_id": 22,
+                "label": "text",
+                "score": 0.7955641150474548,
+                "coordinate": [
+                    170,
+                    258,
+                    627,
+                    281
+                ],
+                "order": 7,
+                "polygon_points": [
+                    [
+                        170.0,
+                        258.0
+                    ],
+                    [
+                        627.0,
+                        258.0
+                    ],
+                    [
+                        627.0,
+                        281.0
+                    ],
+                    [
+                        170.0,
+                        281.0
+                    ]
+                ]
+            },
+            {
+                "cls_id": 22,
+                "label": "text",
+                "score": 0.7956826686859131,
+                "coordinate": [
+                    161,
+                    291,
+                    880,
+                    316
+                ],
+                "order": 8,
+                "polygon_points": [
+                    [
+                        161.0,
+                        291.0
+                    ],
+                    [
+                        880.0,
+                        291.0
+                    ],
+                    [
+                        880.0,
+                        316.0
+                    ],
+                    [
+                        161.0,
+                        316.0
+                    ]
+                ]
+            }
+        ]
+    }
+}
