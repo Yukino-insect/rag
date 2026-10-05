@@ -1,0 +1,139 @@
+
+package com.jh.han.rag.rag.service.ratelimit;
+
+import cn.dev33.satoken.stp.StpUtil;
+import cn.hutool.core.util.IdUtil;
+import cn.hutool.core.util.StrUtil;
+import com.jh.han.rag.framework.convention.ChatMessage;
+import com.jh.han.rag.framework.context.UserContext;
+import com.jh.han.rag.framework.web.SseEmitterSender;
+import com.jh.han.rag.rag.config.MemoryProperties;
+import com.jh.han.rag.rag.core.memory.ConversationMemoryService;
+import com.jh.han.rag.rag.dto.CompletionPayload;
+import com.jh.han.rag.rag.dto.MessageDelta;
+import com.jh.han.rag.rag.dto.MetaPayload;
+import com.jh.han.rag.rag.enums.SSEEventType;
+import com.jh.han.rag.rag.service.ConversationGroupService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.util.Strings;
+import org.springframework.stereotype.Component;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
+import java.util.concurrent.Executor;
+import java.util.concurrent.RejectedExecutionException;
+
+/**
+ * SSE 单机并发限流入口。
+ *
+ * <p>固定大小的 {@code chatEntryExecutor} 就是限流器：没有空闲工作线程时直接拒绝，
+ * 避免请求堆积在 Redis 队列里占用连接、内存和排查成本。</p>
+ */
+@Slf4j
+@Component
+@RequiredArgsConstructor
+public class ChatQueueLimiter {
+
+    private static final String REJECT_MESSAGE = "系统繁忙，请稍后再试";
+    private static final String RESPONSE_TYPE = "response";
+
+    private final Executor chatEntryExecutor;
+    private final ConversationMemoryService memoryService;
+    private final ConversationGroupService conversationGroupService;
+    private final MemoryProperties memoryProperties;
+
+    public void enqueue(String question, String conversationId, SseEmitter emitter, Runnable onAcquire) {
+        try {
+            // 使用线程池限流
+            chatEntryExecutor.execute(onAcquire);
+        } catch (RejectedExecutionException ex) {
+            log.warn("聊天工作线程已满，转 reject 流程");
+            handleReject(question, conversationId, emitter);
+        }
+    }
+
+    // ==================== Reject 业务 ====================
+
+    private void handleReject(String question, String conversationId, SseEmitter emitter) {
+        RejectedContext context = null;
+        try {
+            context = recordRejectedConversation(question, conversationId, resolveUserId());
+        } catch (Exception ex) {
+            // 记录失败不能阻塞 emitter，否则前端永远收不到 DONE
+            log.warn("记录 reject 会话失败，仍向前端发送 DONE", ex);
+        }
+        sendRejectEvents(emitter, context);
+    }
+
+    private RejectedContext recordRejectedConversation(String question, String conversationId, String userId) {
+        if (StrUtil.isBlank(question) || StrUtil.isBlank(userId)) {
+            return null;
+        }
+
+        String actualConversationId;
+        boolean isNewConversation;
+        if (StrUtil.isBlank(conversationId)) {
+            // 入参未带 conversationId：刚生成的雪花 ID 不可能命中已有会话，跳过 existence 查询
+            actualConversationId = IdUtil.getSnowflakeNextIdStr();
+            isNewConversation = true;
+        } else {
+            actualConversationId = conversationId;
+            isNewConversation = conversationGroupService.findConversation(actualConversationId, userId) == null;
+        }
+
+        String questionMessageId = memoryService.append(actualConversationId, userId, ChatMessage.user(question));
+        ChatMessage rejectedMessage = ChatMessage.assistant(REJECT_MESSAGE);
+        rejectedMessage.setReplyToMessageId(questionMessageId);
+        rejectedMessage.setMessageStatus(ChatMessage.MessageStatus.REJECTED);
+        String messageId = memoryService.append(actualConversationId, userId, rejectedMessage);
+
+        String title = Strings.EMPTY;
+        if (isNewConversation) {
+            // append(USER) 内部会触发 conversationService.createOrUpdate（含 LLM 生成标题），此处回查拿到生成结果
+            var conversation = conversationGroupService.findConversation(actualConversationId, userId);
+            title = conversation != null ? conversation.getTitle() : Strings.EMPTY;
+            if (StrUtil.isBlank(title)) {
+                title = buildFallbackTitle(question);
+            }
+        }
+        String taskId = IdUtil.getSnowflakeNextIdStr();
+        return new RejectedContext(actualConversationId, taskId, messageId, title);
+    }
+
+    private String buildFallbackTitle(String question) {
+        if (StrUtil.isBlank(question)) {
+            return Strings.EMPTY;
+        }
+        int maxLen = memoryProperties.getTitleMaxLength() != null ? memoryProperties.getTitleMaxLength() : 30;
+        String cleaned = question.trim();
+        return cleaned.length() <= maxLen ? cleaned : cleaned.substring(0, maxLen);
+    }
+
+    private void sendRejectEvents(SseEmitter emitter, RejectedContext rejectedContext) {
+        SseEmitterSender sender = new SseEmitterSender(emitter);
+        if (rejectedContext != null) {
+            sender.sendEvent(SSEEventType.META.value(), new MetaPayload(rejectedContext.conversationId, rejectedContext.taskId));
+            sender.sendEvent(SSEEventType.REJECT.value(), new MessageDelta(RESPONSE_TYPE, REJECT_MESSAGE));
+            sender.sendEvent(SSEEventType.FINISH.value(),
+                    new CompletionPayload(String.valueOf(rejectedContext.messageId), rejectedContext.title,
+                            null, ChatMessage.MessageStatus.REJECTED));
+        }
+        sender.sendEvent(SSEEventType.DONE.value(), "[DONE]");
+        sender.complete();
+    }
+
+    private String resolveUserId() {
+        String userId = UserContext.getUserId();
+        if (StrUtil.isNotBlank(userId)) {
+            return userId;
+        }
+        try {
+            return StpUtil.getLoginIdAsString();
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    private record RejectedContext(String conversationId, String taskId, String messageId, String title) {
+    }
+}

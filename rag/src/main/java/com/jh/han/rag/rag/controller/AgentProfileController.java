@@ -1,0 +1,98 @@
+
+package com.jh.han.rag.rag.controller;
+
+import com.jh.han.rag.framework.convention.Result;
+import com.jh.han.rag.framework.web.Results;
+import com.jh.han.rag.rag.controller.request.AgentProfileSaveRequest;
+import com.jh.han.rag.rag.controller.request.AgentPromptSaveRequest;
+import com.jh.han.rag.rag.controller.vo.AgentProfileListVO;
+import com.jh.han.rag.rag.controller.vo.AgentPromptConfigVO;
+import com.jh.han.rag.rag.service.AgentProfileAdminService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
+/**
+ * 智能体管理控制器
+ */
+@RestController
+@RequiredArgsConstructor
+public class AgentProfileController {
+
+    private final AgentProfileAdminService agentProfileAdminService;
+
+    /**
+     * 查询智能体列表
+     */
+    @GetMapping("/agents")
+    public Result<AgentProfileListVO> list() {
+        return Results.success(agentProfileAdminService.list());
+    }
+
+    /**
+     * 创建智能体
+     */
+    @PostMapping("/agents")
+    public Result<String> create(@RequestBody AgentProfileSaveRequest requestParam) {
+        return Results.success(agentProfileAdminService.create(requestParam));
+    }
+
+    /**
+     * 更新智能体名称与描述
+     */
+    @PutMapping("/agents/{id}")
+    public Result<Void> update(@PathVariable String id, @RequestBody AgentProfileSaveRequest requestParam) {
+        agentProfileAdminService.update(id, requestParam);
+        return Results.success();
+    }
+
+    /**
+     * 删除智能体
+     */
+    @DeleteMapping("/agents/{id}")
+    public Result<Void> delete(@PathVariable String id) {
+        agentProfileAdminService.delete(id);
+        return Results.success();
+    }
+
+    /**
+     * 激活智能体，立即对全部会话生效
+     */
+    @PostMapping("/agents/{id}/activate")
+    public Result<Void> activate(@PathVariable String id) {
+        agentProfileAdminService.activate(id);
+        return Results.success();
+    }
+
+    /**
+     * 查询该智能体的槽位配置，含槽位元数据与当前架构下的生效判定
+     */
+    @GetMapping("/agents/{id}/prompts")
+    public Result<AgentPromptConfigVO> prompts(@PathVariable String id) {
+        return Results.success(agentProfileAdminService.loadPrompts(id));
+    }
+
+    /**
+     * 保存单个槽位，内容留空即恢复回落内置智能体
+     */
+    @PutMapping("/agents/{id}/prompts/{slotKey}")
+    public Result<Void> savePrompt(@PathVariable String id,
+                                   @PathVariable String slotKey,
+                                   @RequestBody AgentPromptSaveRequest requestParam) {
+        agentProfileAdminService.savePrompt(id, slotKey, requestParam);
+        return Results.success();
+    }
+
+    /**
+     * 查询内置智能体的槽位内容，供「从默认复制」
+     */
+    @GetMapping("/agents/prompt-slots/{slotKey}/default")
+    public Result<String> defaultPrompt(@PathVariable String slotKey) {
+        return Results.success(agentProfileAdminService.defaultPrompt(slotKey));
+    }
+}
