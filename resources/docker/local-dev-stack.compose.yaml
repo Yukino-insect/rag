@@ -1,0 +1,136 @@
+name: rag-local-dev
+
+services:
+  postgres:
+    image: pgvector/pgvector:0.8.5-pg17-trixie
+    container_name: rag-postgres
+    environment:
+      POSTGRES_DB: rag
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "15432:5432"
+    volumes:
+      - rag-postgres-data:/var/lib/postgresql/data
+      - ../database/schema_pg.sql:/docker-entrypoint-initdb.d/01-schema_pg.sql:ro
+      - ../database/init_data_pg.sql:/docker-entrypoint-initdb.d/02-init_data_pg.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d rag"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: rag-redis
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "123456"]
+    ports:
+      - "16379:6379"
+    volumes:
+      - rag-redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "123456", "PING"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  rustfs:
+    image: rustfs/rustfs:1.0.0-alpha.72
+    container_name: rag-rustfs
+    command:
+      - "--address"
+      - ":9000"
+      - "--console-enable"
+      - "--access-key"
+      - "rustfsadmin"
+      - "--secret-key"
+      - "rustfsadmin"
+      - "/data"
+    environment:
+      - RUSTFS_ACCESS_KEY=rustfsadmin
+      - RUSTFS_SECRET_KEY=rustfsadmin
+      - RUSTFS_CONSOLE_ENABLE=true
+    ports:
+      - "19000:9000"
+      - "19001:9001"
+    volumes:
+      - rustfs-data:/data
+    healthcheck:
+      test: ["CMD", "sh", "-c", "wget -qO- http://localhost:9000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+
+  etcd:
+    profiles: ["milvus"]
+    image: quay.io/coreos/etcd:v3.5.18
+    container_name: rag-etcd
+    environment:
+      - ETCD_AUTO_COMPACTION_MODE=revision
+      - ETCD_AUTO_COMPACTION_RETENTION=1000
+      - ETCD_QUOTA_BACKEND_BYTES=4294967296
+      - ETCD_SNAPSHOT_COUNT=50000
+    command: >
+      etcd
+      -advertise-client-urls=http://etcd:2379
+      -listen-client-urls http://0.0.0.0:2379
+      --data-dir /etcd
+    volumes:
+      - etcd-data:/etcd
+    healthcheck:
+      test: ["CMD", "etcdctl", "endpoint", "health"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    restart: unless-stopped
+
+  milvus-standalone:
+    profiles: ["milvus"]
+    image: milvusdb/milvus:v2.6.6
+    container_name: rag-milvus-standalone
+    command: ["milvus", "run", "standalone"]
+    security_opt:
+      - seccomp:unconfined
+    environment:
+      ETCD_ENDPOINTS: etcd:2379
+      MINIO_ADDRESS: rustfs:9000
+      MINIO_ACCESS_KEY_ID: rustfsadmin
+      MINIO_SECRET_ACCESS_KEY: rustfsadmin
+    volumes:
+      - milvus-data:/var/lib/milvus
+    ports:
+      - "29530:19530"
+      - "19091:9091"
+    depends_on:
+      - etcd
+      - rustfs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
+      interval: 30s
+      start_period: 90s
+      timeout: 20s
+      retries: 3
+    restart: unless-stopped
+
+  milvus-attu:
+    profiles: ["milvus"]
+    image: zilliz/attu:v2.6.3
+    container_name: rag-milvus-attu
+    environment:
+      MILVUS_URL: milvus-standalone:19530
+    ports:
+      - "18000:3000"
+    depends_on:
+      - milvus-standalone
+    restart: unless-stopped
+
+volumes:
+  rag-postgres-data:
+  rag-redis-data:
+  rustfs-data:
+  etcd-data:
+  milvus-data:
+
